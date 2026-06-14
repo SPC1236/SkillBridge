@@ -18,15 +18,17 @@ $message = '';
 $status_type = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $title = trim($_POST['title']);
-    $company_name = trim($_POST['company_name']);
-    $location = trim($_POST['location']);
-    $job_type = trim($_POST['job_type']);
+    // CAPTURE THE DATA FROM THE FORM
+    $title = isset($_POST['title']) ? trim($_POST['title']) : '';
+    $company_name = isset($_POST['company_name']) ? trim($_POST['company_name']) : '';
+    $location = isset($_POST['location']) ? trim($_POST['location']) : '';
+    $job_type = isset($_POST['job_type']) ? trim($_POST['job_type']) : '';
     $salary_min = !empty($_POST['salary_min']) ? intval($_POST['salary_min']) : null;
     $salary_max = !empty($_POST['salary_max']) ? intval($_POST['salary_max']) : null;
-    $skills_required = trim($_POST['skills_required']);
-    $description = trim($_POST['description']);
+    $skills_required = isset($_POST['skills_required']) ? trim($_POST['skills_required']) : '';
+    $description = isset($_POST['description']) ? trim($_POST['description']) : '';
 
+    // Now the variables are populated, the empty() check will work correctly
     if (!empty($title) && !empty($company_name) && !empty($description)) {
         try {
             $sql = "INSERT INTO jobs (employer_id, title, company_name, location, job_type, salary_min, salary_max, skills_required, description) 
@@ -44,12 +46,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bindParam(':description', $description);
             
             if ($stmt->execute()) {
-                header('Location: manage_jobs.php?created=1');
-                exit;
+                $message = "Success! Your job listing has been published.";
+                $status_type = "success";
             }
         } catch (PDOException $e) {
-            error_log("Database Error posting job: " . $e->getMessage());
-            $message = "An internal processing error occurred. Please try again.";
+            error_log("Database Error: " . $e->getMessage());
+            $message = "An internal processing error occurred.";
             $status_type = "error";
         }
     } else {
@@ -107,6 +109,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         justify-content: flex-end;
         gap: 1rem;
     }
+    .alert-success {
+    padding: 1rem;
+    border-radius: var(--radius-lg);
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    border-left: 4px solid #22c55e;
+    background: rgba(34, 197, 94, 0.08);
+    color: #22c55e;
+    font-weight: 600;
+}
     .btn-action {
         padding: 0.75rem 1.75rem;
         border-radius: var(--radius-lg);
@@ -156,8 +168,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <?php if ($message): ?>
-    <div class="alert-banner">
-        <i class="fas fa-circle-exclamation" style="color:#ef4444; margin-right:0.5rem;"></i> <?php echo htmlspecialchars($message); ?>
+    <div class="<?php echo ($status_type === 'success') ? 'alert-success' : 'alert-banner'; ?>">
+        <i class="fas fa-circle-<?php echo ($status_type === 'success') ? 'check' : 'exclamation'; ?>" style="margin-right:0.5rem;"></i> 
+        <?php echo htmlspecialchars($message); ?>
+        
+        <?php if ($status_type === 'success'): ?>
+            <br><a href="manage_jobs.php" style="color: #22c55e; text-decoration: underline; font-size: 0.8rem;">View in Dashboard</a>
+        <?php endif; ?>
     </div>
 <?php endif; ?>
 

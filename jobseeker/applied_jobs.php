@@ -101,7 +101,7 @@ foreach ($applications as $app) {
                 <p class="text-muted">Monitor active job pipeline entries, recruitment cycles, and contract delivery logs.</p>
             </div>
             <div>
-                <a href="<?php echo SITE_URL; ?>/public/jobs.php" class="btn btn-primary btn-large">
+                <a href="<?php echo SITE_URL; ?>/jobseeker/jobs.php" class="btn btn-primary btn-large">
                     <i class="fas fa-search"></i> Discover Jobs
                 </a>
             </div>

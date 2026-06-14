@@ -33,32 +33,26 @@ if (isset($_GET['remove']) && is_numeric($_GET['remove'])) {
 
 $saved_jobs = [];
 $total_saved = 0;
-
 try {
-    $table_check = $conn->query("SHOW TABLES LIKE 'saved_jobs'");
-    if ($table_check->rowCount() > 0) {
-        $sql = "SELECT sj.*, 
-                       j.title, 
-                       j.company_name, 
-                       j.location, 
-                       j.job_type, 
-                       j.salary_min, 
-                       j.salary_max,
-                       j.skills_required,
-                       j.description
-                FROM saved_jobs sj 
-                LEFT JOIN jobs j ON sj.job_id = j.id 
-                WHERE sj.user_id = :user_id 
-                ORDER BY sj.saved_date DESC";
-        
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':user_id', $user_id);
-        $stmt->execute();
-        $saved_jobs = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $total_saved = count($saved_jobs);
-    }
+    // 1. Fetch Saved Jobs
+    $sql_saved = "SELECT sj.job_id, j.title, j.company_name, j.location, j.job_type, j.salary_min, j.salary_max, j.skills_required, 'saved' as type 
+                  FROM saved_jobs sj 
+                  LEFT JOIN jobs j ON sj.job_id = j.id 
+                  WHERE sj.user_id = :user_id";
+    
+    // 2. Fetch Applied Jobs
+    $sql_applied = "SELECT ja.job_id, j.title, j.company_name, j.location, j.job_type, j.salary_min, j.salary_max, j.skills_required, 'applied' as type 
+                    FROM job_applications ja 
+                    LEFT JOIN jobs j ON ja.job_id = j.id 
+                    WHERE ja.user_id = :user_id";
+
+    $stmt = $conn->prepare($sql_saved . " UNION " . $sql_applied);
+    $stmt->bindParam(':user_id', $user_id);
+    $stmt->execute();
+    $jobs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $total_items = count($jobs);
 } catch(PDOException $e) {
-    error_log("Error fetching saved jobs: " . $e->getMessage());
+    error_log("Error fetching jobs: " . $e->getMessage());
 }
 
 $success_message = '';
@@ -109,6 +103,7 @@ if (isset($_GET['removed'])) {
         background: #0ea5e9; /* Deepened sky blue */
         transform: translateY(-2px);
     }
+    
 
     /* System Status Alerts styling upgrades - Sky Blue theme */
     .modern-alert {
@@ -211,6 +206,29 @@ if (isset($_GET['removed'])) {
         gap: 1rem;
         align-items: flex-start;
         margin-bottom: 1.25rem;
+    }
+
+    .badge-status {
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        background: rgba(56, 189, 248, 0.15);
+        color: #38bdf8;
+        margin-bottom: 0.5rem;
+        display: inline-block;
+
+    .badge-status {
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        background: rgba(56, 189, 248, 0.15);
+        color: #38bdf8;
+        margin-bottom: 0.5rem;
+        display: inline-block;
     }
 
     .dynamic-avatar-logo {
@@ -355,6 +373,23 @@ if (isset($_GET['removed'])) {
         transition: var(--transition-smooth);
         cursor: pointer;
     }
+    /* Ensure buttons match your color scheme */
+.btn-view-details {
+    background: transparent;
+    border: 1px solid var(--border-light);
+    color: var(--text-primary);
+}
+
+.btn-trigger-apply {
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    color: #38bdf8;
+}
+
+.btn-trigger-apply:hover {
+    background: #38bdf8;
+    color: #ffffff;
+}
 
     .btn-workspace.btn-view-details {
         background: transparent;
@@ -431,108 +466,57 @@ if (isset($_GET['removed'])) {
 
 <div class="dashboard-view-header">
     <div>
-        <h1>Saved Jobs</h1>
-        <p>Manage the dynamic positions you have bookmarked for future reference</p>
-    </div>
-    <a href="<?php echo SITE_URL; ?>/employer/browse_seekers.php" class="header-action-btn">
-        <i class="fas fa-magnifying-glass"></i> Explore Job Directory
-    </a>
-</div>
-
-<?php if ($success_message): ?>
-    <div class="modern-alert">
-        <i class="fas fa-circle-check"></i>
-        <span><?php echo htmlspecialchars($success_message); ?></span>
-    </div>
-<?php endif; ?>
-
-<div class="metric-overview-strip">
-    <div class="metric-glass-card">
-        <div class="metric-icon-box">
-            <i class="fas fa-bookmark"></i>
-        </div>
-        <div class="metric-data-readout">
-            <span class="metric-val"><?php echo $total_saved; ?></span>
-            <span class="metric-lbl">Total Bookmarks</span>
-        </div>
+        <h1>My Career Dashboard</h1>
+        <p>Manage your saved bookmarks and application status</p>
     </div>
 </div>
 
-<?php if ($total_saved > 0): ?>
-    <div class="saved-jobs-grid">
-        <?php foreach ($saved_jobs as $job): 
-            $skills = !empty($job['skills_required']) ? array_map('trim', explode(',', $job['skills_required'])) : [];
-            $skills = array_slice($skills, 0, 4);
-        ?>
-            <article class="modern-job-card">
-                <div>
-                    <div class="card-top-deck">
-                        <div class="dynamic-avatar-logo">
-                            <?php echo htmlspecialchars(substr($job['company_name'] ?? 'C', 0, 1)); ?>
-                        </div>
-                        <div class="deck-details-box">
-                            <h2><?php echo htmlspecialchars($job['title'] ?? 'Untitled Position'); ?></h2>
-                            <span class="company-anchor-link">
-                                <i class="fas fa-building"></i> <?php echo htmlspecialchars($job['company_name'] ?? 'Corporate Entity'); ?>
-                            </span>
-                        </div>
-                        <a href="?remove=<?php echo $job['job_id']; ?>" 
-                           class="trash-action-anchor" 
-                           onclick="return confirm('Are you sure you want to remove this position from your bookmarks?');" 
-                           title="Remove Bookmark">
-                            <i class="fas fa-trash-can"></i>
-                        </a>
+<div class="saved-jobs-grid">
+    <?php foreach ($jobs as $job): 
+        $skills = !empty($job['skills_required']) ? array_map('trim', explode(',', $job['skills_required'])) : [];
+    ?>
+        <article class="modern-job-card">
+            <div>
+                <div class="card-top-deck">
+                    <div class="dynamic-avatar-logo">
+                        <?php echo htmlspecialchars(substr($job['company_name'] ?? 'C', 0, 1)); ?>
                     </div>
-
-                    <div class="meta-tags-cloud">
-                        <span class="cloud-tag-item">
-                            <i class="fas fa-location-dot"></i> <?php echo htmlspecialchars($job['location'] ?? 'Remote'); ?>
+                    
+                    <div class="deck-details-box">
+                        <!-- ADDED BADGE HERE -->
+                        <span class="badge-status"><?php echo ucfirst($job['type']); ?></span>
+                        
+                        <h2><?php echo htmlspecialchars($job['title']); ?></h2>
+                        <span class="company-anchor-link">
+                            <i class="fas fa-building"></i> <?php echo htmlspecialchars($job['company_name']); ?>
                         </span>
-                        <span class="cloud-tag-item">
-                            <i class="fas fa-briefcase"></i> <?php echo htmlspecialchars($job['job_type'] ?? 'Contract'); ?>
-                        </span>
-                        <?php if (!empty($job['salary_min']) && !empty($job['salary_max'])): ?>
-                            <span class="cloud-tag-item salary-highlight">
-                                <i class="fas fa-money-bill-wave"></i> $<?php echo number_format($job['salary_min']); ?> - $<?php echo number_format($job['salary_max']); ?>
-                            </span>
-                        <?php endif; ?>
                     </div>
-
-                    <?php if (!empty($skills)): ?>
-                        <div class="skills-capsules-strip">
-                            <?php foreach ($skills as $skill): ?>
-                                <span class="skill-pill"><?php echo htmlspecialchars($skill); ?></span>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
                 </div>
-
+                <!-- ... rest of your existing card HTML ... -->
                 <div class="card-footer-actions">
-                    <a href="job_details.php?id=<?php echo $job['job_id']; ?>" class="btn-workspace btn-view-details">
-                        <i class="fas fa-expand"></i> View Specs
-                    </a>
-                    <a href="apply.php?id=<?php echo $job['job_id']; ?>" class="btn-workspace btn-trigger-apply">
-                        <i class="fas fa-paper-plane"></i> Apply Now
-                    </a>
-                </div>
-            </article>
-        <?php endforeach; ?>
-    </div>
-<?php else: ?>
-    <div class="empty-canvas-state">
-        <i class="fas fa-folder-open"></i>
-        <h3>No Bookmarked Positions</h3>
-        <p>You haven't saved any career paths or available contracts yet. Explore available jobs to add them to your tracking board.</p>
-        <a href="<?php echo SITE_URL; ?>/employer/browse_seekers.php" class="header-action-btn" style="box-shadow: none;">
-            <i class="fas fa-magnifying-glass"></i> Explore System Directory
+    <!-- View Specs is always available -->
+    <a href="job_details.php?id=<?php echo $job['job_id']; ?>" class="btn-workspace btn-view-details">
+        <i class="fas fa-expand"></i> View Specs
+    </a>
+    
+    <!-- Only show "Apply Now" if the job is just Saved, not already Applied -->
+    <?php if ($job['type'] === 'saved'): ?>
+        <a href="apply.php?id=<?php echo $job['job_id']; ?>" class="btn-workspace btn-trigger-apply">
+            <i class="fas fa-paper-plane"></i> 
         </a>
-    </div>
-<?php endif; ?>
+    <?php else: ?>
+        <!-- Optional: Show a disabled button or "Status" for applied jobs -->
+        <button class="btn-workspace" disabled style="background:#f1f5f9; cursor:default;">
+            <i class="fas fa-check"></i> Applied
+        </button>
+    <?php endif; ?>
+</div>
+            </div>
+        </article>
+    <?php endforeach; ?>
+</div>
 
 <?php
-// Capture workspace buffer assignments execution array
 $content = ob_get_clean();
-
-// Pass compilation context data over structural template core wrapper array execution matrix
 require_once '../includes/dashboard_layout.php';
 ?>

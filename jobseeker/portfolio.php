@@ -16,7 +16,21 @@ ob_start();
 
 $database = new Database();
 $conn = $database->getConnection();
+
+// --- ROBUST SESSION INTEGRITY CORRECTION ---
+if (!isset($_SESSION['user_id']) && isset($_SESSION['id'])) {
+    $_SESSION['user_id'] = $_SESSION['id'];
+}
+
+if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
+    die("<div style='padding:2rem; background:#111827; color:#ef4444; font-family:sans-serif;'>
+            <strong>Critical Framework Error:</strong> Active user context identifier could not be resolved. 
+            Please clear your browser cookies, log out, and log back in to rebuild your authorization token.
+         </div>");
+}
+
 $user_id = $_SESSION['user_id'];
+// --------------------------------------------
 
 $status_message = '';
 $status_type = '';
@@ -37,6 +51,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $avail = trim($_POST['availability_allocation']);
 
     try {
+        $user_verify = $conn->prepare("SELECT id FROM job_seekers WHERE id = :user_id");
+        $user_verify->execute([':user_id' => $user_id]);
+        
+        if (!$user_verify->fetch()) {
+            throw new Exception("The user ID ($user_id) found in your session data does not exist in the job_seekers table. Current Database: " . DB_NAME);
+        }
+        // -------------------------------
+
         $check_sql = "SELECT id FROM jobseeker_portfolios WHERE jobseeker_id = :user_id";
         $check_stmt = $conn->prepare($check_sql);
         $check_stmt->execute([':user_id' => $user_id]);
@@ -66,9 +88,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $status_message = "Professional showcase portfolio compiled successfully.";
         $status_type = "success";
-    } catch (PDOException $e) {
+    } catch (Exception $e) {
         error_log("Portfolio pipeline database error: " . $e->getMessage());
-        $status_message = "Database write error execution failure.";
+        $status_message = "Database Sync Engine Failure: " . $e->getMessage();
         $status_type = "error";
     }
 }
@@ -95,9 +117,9 @@ try {
     .field-block label { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.03em; }
     .field-ctrl { padding: 0.75rem 1rem; background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-light); color: #fff; border-radius: 8px; font-size: 0.95rem; font-family: inherit; transition: var(--transition-smooth); }
     .field-ctrl:focus { border-color: #38bdf8; outline: none; background: rgba(0, 0, 0, 0.35); }
-    .alert-banner { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; border-radius: var(--radius-lg); margin-bottom: 1.5rem; font-size: 0.9rem; }
+    .alert-banner { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; border-radius: var(--radius-lg); margin-bottom: 1.5rem; font-size: 0.9rem; word-break: break-word; }
     .alert-banner.success { background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-left: 4px solid #10b981; color: var(--text-primary); }
-    .alert-banner.error { background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-left: 4px solid #ef4444; color: var(--text-primary); }
+    .alert-banner.error { background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-left: 4px solid #ef4444; color: #fca5a5; }
     .deploy-btn { background: #38bdf8; border: none; color: var(--bg-primary); padding: 0.85rem 2rem; border-radius: 8px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; transition: var(--transition-smooth); }
     .deploy-btn:hover { background: #0ea5e9; transform: translateY(-1px); }
 </style>
@@ -116,7 +138,7 @@ try {
         </div>
     <?php endif; ?>
 
-    <form action="/freelance_portal/jobseeker/portfolio.php" method="POST">
+    <form action="portfolio.php" method="POST">
         
         <div class="meta-card">
             <h3 class="section-title"><i class="fa-solid fa-graduation-cap"></i> Professional Foundation</h3>

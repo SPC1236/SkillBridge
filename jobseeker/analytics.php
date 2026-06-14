@@ -33,10 +33,9 @@ $completion_percent = round(($filled / count($fields)) * 100);
 // Get profile views
 $profile_views = $profile['profile_views'] ?? 0;
 
-// Sample analytics data - in production, this would come from database
-// For now, we'll create realistic demo data
-$weekly_views = [12, 8, 15, 22, 18, 25, 30]; // Last 7 days
-$monthly_views = [45, 52, 68, 89, 105, 134]; // Last 6 months
+// Sample analytics data
+$weekly_views = [12, 8, 15, 22, 18, 25, 30]; 
+$monthly_views = [45, 52, 68, 89, 105, 134]; 
 $applications_by_week = [2, 3, 5, 4, 7, 6, 8];
 $profile_completion_impact = [
     '0-20%' => 5,
@@ -59,14 +58,12 @@ $skill_demand = [
 // Get user's skills
 $user_skills = !empty($profile['skills']) ? array_map('trim', explode(',', $profile['skills'])) : [];
 
-// Sidebar variables
+// Sidebar counters
 $applied_jobs = 0;
 $saved_jobs = 0;
 ?>
 
-<!-- Modern Analytics Page -->
 <div class="dashboard-container">
-    <!-- Sidebar Navigation -->
     <aside class="dashboard-sidebar">
         <div class="sidebar-user">
             <div class="sidebar-avatar">
@@ -89,7 +86,7 @@ $saved_jobs = 0;
                 <i class="fas fa-edit"></i>
                 <span>Edit Profile</span>
             </a>
-            <a href="#" class="sidebar-link">
+            <a href="applied_jobs.php" class="sidebar-link">
                 <i class="fas fa-briefcase"></i>
                 <span>Applied Jobs</span>
                 <span class="badge"><?php echo $applied_jobs; ?></span>
@@ -98,20 +95,15 @@ $saved_jobs = 0;
                 <i class="fas fa-chart-line"></i>
                 <span>Analytics</span>
             </a>
-
             <a href="<?php echo SITE_URL; ?>/public/contact.php" class="sidebar-link">
                 <i class="fas fa-headset"></i>
                 <span>Support</span>
-                </a>
-
-              </a>
-            <div class="stat-info">
-            <div class="stat-value"><?php echo $saved_jobs; ?></div>
-            <div class="stat-label">Saved Jobs</div>
-            <a href="saved_jobs.php" style="font-size: 0.7rem; color: var(--accent-primary);">View all →</a>
-        </div>
-        </nav>
-
+            </a>
+            <div class="stat-info" style="padding: 1rem 0.75rem; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                <div class="stat-value"><?php echo $saved_jobs; ?></div>
+                <div class="stat-label">Saved Jobs</div>
+                <a href="saved_jobs.php" style="font-size: 0.7rem; color: var(--accent-primary); text-decoration: none;">View all →</a>
+            </div>
         </nav>
         
         <div class="sidebar-footer">
@@ -119,11 +111,9 @@ $saved_jobs = 0;
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
             </a>
-
         </div>
     </aside>
 
-    <!-- Main Content -->
     <main class="dashboard-main">
         <div class="dashboard-header">
             <div>
@@ -137,12 +127,9 @@ $saved_jobs = 0;
             </div>
         </div>
 
-        <!-- Key Metrics Overview -->
         <div class="dashboard-stats">
             <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-eye"></i>
-                </div>
+                <div class="stat-icon"><i class="fas fa-eye"></i></div>
                 <div class="stat-info">
                     <div class="stat-value"><?php echo number_format($profile_views); ?></div>
                     <div class="stat-label">Total Profile Views</div>
@@ -151,9 +138,7 @@ $saved_jobs = 0;
             </div>
             
             <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
+                <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
                 <div class="stat-info">
                     <div class="stat-value"><?php echo $profile_views > 0 ? round(($profile_views / max(1, $profile_views)) * 100) : 0; ?></div>
                     <div class="stat-label">Profile Strength</div>
@@ -162,9 +147,7 @@ $saved_jobs = 0;
             </div>
             
             <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-search"></i>
-                </div>
+                <div class="stat-icon"><i class="fas fa-search"></i></div>
                 <div class="stat-info">
                     <div class="stat-value"><?php echo $profile_views > 0 ? rand(5, 20) : 0; ?></div>
                     <div class="stat-label">Times Discovered</div>
@@ -173,9 +156,7 @@ $saved_jobs = 0;
             </div>
             
             <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-percent"></i>
-                </div>
+                <div class="stat-icon"><i class="fas fa-percent"></i></div>
                 <div class="stat-info">
                     <div class="stat-value"><?php echo $completion_percent; ?>%</div>
                     <div class="stat-label">Profile Completion</div>
@@ -186,9 +167,7 @@ $saved_jobs = 0;
             </div>
         </div>
 
-        <!-- Charts Row -->
         <div class="dashboard-grid-2">
-            <!-- Profile Views Chart -->
             <div class="card chart-card">
                 <div class="card-header">
                     <div>
@@ -206,7 +185,6 @@ $saved_jobs = 0;
                 </div>
             </div>
 
-            <!-- Applications Chart -->
             <div class="card chart-card">
                 <div class="card-header">
                     <div>
@@ -220,9 +198,7 @@ $saved_jobs = 0;
             </div>
         </div>
 
-        <!-- Second Row -->
         <div class="dashboard-grid-2">
-            <!-- Profile Completion Impact -->
             <div class="card">
                 <div class="card-header">
                     <h3>Profile Completion Impact</h3>
@@ -231,8 +207,8 @@ $saved_jobs = 0;
                 <div style="height: 220px; position: relative;">
                     <canvas id="completionChart"></canvas>
                 </div>
-                <div class="profile-tip">
-                    <i class="fas fa-lightbulb"></i>
+                <div class="profile-tip" style="margin-top:1rem; display:flex; align-items:center; gap:0.5rem; margin-bottom: 1rem;">
+                    <i class="fas fa-lightbulb" style="color: var(--accent-warning);"></i>
                     <span>
                         <?php if($completion_percent < 60): ?>
                             Complete your profile to get <strong><?php echo rand(200, 500); ?>% more views</strong>
@@ -241,9 +217,16 @@ $saved_jobs = 0;
                         <?php endif; ?>
                     </span>
                 </div>
+                <div style="display: flex; gap: 0.75rem; width: 100%;">
+                    <a href="edit_profile.php" class="btn btn-outline" style="flex: 1; text-align:center; padding:0.5rem; border:1px solid var(--accent-primary); color:var(--accent-primary); text-decoration:none; border-radius:6px; font-size: 0.9rem;">
+                        <i class="fas fa-user-edit"></i> Edit Profile
+                    </a>
+                    <a href="portfolio.php" class="btn btn-primary" style="flex: 1; text-align:center; padding:0.5rem; text-decoration:none; border-radius:6px; font-size: 0.9rem;">
+                        <i class="fas fa-plus-circle"></i> Create Portfolio
+                    </a>
+                </div>
             </div>
 
-            <!-- Skill Demand Analysis -->
             <div class="card">
                 <div class="card-header">
                     <div>
@@ -251,18 +234,18 @@ $saved_jobs = 0;
                         <p class="text-muted" style="font-size: 0.75rem; margin: 0.1rem 0 0 0;">Marketplace demand</p>
                     </div>
                 </div>
-                <div class="skill-demand-list">
+                <div class="skill-demand-list" style="margin-top: 1rem;">
                     <?php foreach($skill_demand as $skill): ?>
-                        <div class="skill-demand-item">
-                            <div class="skill-demand-info">
+                        <div class="skill-demand-item" style="margin-bottom: 1rem;">
+                            <div class="skill-demand-info" style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
                                 <span class="skill-demand-name"><?php echo htmlspecialchars($skill['skill']); ?></span>
                                 <span class="skill-demand-pct"><?php echo $skill['demand']; ?>%</span>
                             </div>
-                            <div class="progress-bar-container">
-                                <div class="progress-bar-fill" style="width: <?php echo $skill['demand']; ?>%;"></div>
+                            <div class="progress-bar-container" style="background: rgba(255,255,255,0.05); height: 6px; border-radius: 4px; overflow: hidden;">
+                                <div class="progress-bar-fill" style="width: <?php echo $skill['demand']; ?>%; height: 100%; background: var(--accent-primary);"></div>
                             </div>
                             <?php if(in_array($skill['skill'], $user_skills)): ?>
-                                <span class="skill-has-badge">
+                                <span class="skill-has-badge" style="font-size: 0.7rem; color: #10b981; display: block; margin-top: 0.25rem;">
                                     <i class="fas fa-check"></i> You have this skill
                                 </span>
                             <?php endif; ?>
@@ -272,8 +255,7 @@ $saved_jobs = 0;
             </div>
         </div>
 
-        <!-- Third Row - Monthly Trends -->
-        <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card" style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
             <div class="card-header">
                 <div>
                     <h3>Monthly Performance Trend</h3>
@@ -285,32 +267,31 @@ $saved_jobs = 0;
             </div>
         </div>
 
-        <!-- Insights & Recommendations -->
         <div class="card">
             <div class="card-header" style="margin-bottom: 1.25rem;">
                 <h3>AI-Powered Insights</h3>
                 <i class="fas fa-robot" style="color: var(--accent-primary); font-size: 1.25rem;"></i>
             </div>
-            <div class="insights-grid">
-                <div class="insight-card primary">
-                    <i class="fas fa-chart-line"></i>
+            <div class="insights-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+                <div class="insight-card primary" style="background: rgba(59,130,246,0.05); padding: 1rem; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                    <i class="fas fa-chart-line" style="color:#3b82f6; margin-bottom:0.5rem;"></i><br>
                     <strong class="insight-title">Profile Views</strong>
-                    <p class="insight-desc">Your profile is getting <?php echo $profile_views > 50 ? 'above average' : 'average'; ?> views compared to similar freelancers.</p>
+                    <p class="insight-desc" style="font-size:0.8rem; margin-top:0.25rem; color:var(--text-muted);">Your profile is getting <?php echo $profile_views > 50 ? 'above average' : 'average'; ?> views compared to similar freelancers.</p>
                 </div>
-                <div class="insight-card warning">
-                    <i class="fas fa-graduation-cap"></i>
+                <div class="insight-card warning" style="background: rgba(245,158,11,0.05); padding: 1rem; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                    <i class="fas fa-graduation-cap" style="color:#f59e0b; margin-bottom:0.5rem;"></i><br>
                     <strong class="insight-title">Skill Gap</strong>
-                    <p class="insight-desc">Adding React and Node.js to your skills could increase views by 40%.</p>
+                    <p class="insight-desc" style="font-size:0.8rem; margin-top:0.25rem; color:var(--text-muted);">Adding React and Node.js to your skills could increase views by 40%.</p>
                 </div>
-                <div class="insight-card success">
-                    <i class="fas fa-calendar"></i>
+                <div class="insight-card success" style="background: rgba(16,185,129,0.05); padding: 1rem; border-radius: 8px; border-left: 4px solid #10b981;">
+                    <i class="fas fa-calendar" style="color:#10b981; margin-bottom:0.5rem;"></i><br>
                     <strong class="insight-title">Best Time to Apply</strong>
-                    <p class="insight-desc">Employers are most active on Tuesday and Wednesday mornings.</p>
+                    <p class="insight-desc" style="font-size:0.8rem; margin-top:0.25rem; color:var(--text-muted);">Employers are most active on Tuesday and Wednesday mornings.</p>
                 </div>
-                <div class="insight-card primary">
-                    <i class="fas fa-file-alt"></i>
+                <div class="insight-card primary" style="background: rgba(59,130,246,0.05); padding: 1rem; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                    <i class="fas fa-file-alt" style="color:#3b82f6; margin-bottom:0.5rem;"></i><br>
                     <strong class="insight-title">Profile Quality</strong>
-                    <p class="insight-desc">
+                    <p class="insight-desc" style="font-size:0.8rem; margin-top:0.25rem; color:var(--text-muted);">
                         <?php echo $completion_percent >= 80 ? 'Excellent! Your profile is fully optimized.' : 'Complete your profile to improve visibility by ' . (100 - $completion_percent) . '%.'; ?>
                     </p>
                 </div>
@@ -319,9 +300,7 @@ $saved_jobs = 0;
     </main>
 </div>
 
-<!-- Chart.js Library -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
 // Profile Views Chart (Last 7 days)
 const viewsCtx = document.getElementById('viewsChart').getContext('2d');
@@ -344,9 +323,6 @@ let viewsChart = new Chart(viewsCtx, {
             pointBorderWidth: 2,
             pointRadius: 4,
             pointHoverRadius: 6,
-            pointHoverBackgroundColor: '#3b82f6',
-            pointHoverBorderColor: '#fff',
-            pointHoverBorderWidth: 2,
             tension: 0.4,
             fill: true
         }]
@@ -354,48 +330,15 @@ let viewsChart = new Chart(viewsCtx, {
     options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                display: false
-            },
-            tooltip: {
-                backgroundColor: '#1f2937',
-                titleColor: '#f9fafb',
-                bodyColor: '#d1d5db',
-                borderColor: 'rgba(255, 255, 255, 0.08)',
-                borderWidth: 1,
-                padding: 10,
-                cornerRadius: 8,
-                displayColors: false,
-                titleFont: { family: 'Inter', weight: 600 },
-                bodyFont: { family: 'Inter' }
-            }
-        },
+        plugins: { legend: { display: false } },
         scales: {
-            y: {
-                grid: {
-                    color: 'rgba(75, 85, 99, 0.1)',
-                    drawBorder: false
-                },
-                ticks: {
-                    color: '#9ca3af',
-                    font: { family: 'Inter', size: 10 }
-                }
-            },
-            x: {
-                grid: {
-                    display: false
-                },
-                ticks: {
-                    color: '#9ca3af',
-                    font: { family: 'Inter', size: 10 }
-                }
-            }
+            y: { grid: { color: 'rgba(75, 85, 99, 0.1)' }, ticks: { color: '#9ca3af' } },
+            x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
         }
     }
 });
 
-// Applications Chart
+// Applications Sent Chart
 const appsCtx = document.getElementById('applicationsChart').getContext('2d');
 let gradientApps = appsCtx.createLinearGradient(0, 0, 0, 250);
 gradientApps.addColorStop(0, 'rgba(59, 130, 246, 0.85)');
@@ -411,51 +354,16 @@ new Chart(appsCtx, {
             backgroundColor: gradientApps,
             borderColor: '#3b82f6',
             borderWidth: 1.5,
-            borderRadius: 6,
-            borderSkipped: false
+            borderRadius: 6
         }]
     },
     options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                display: false
-            },
-            tooltip: {
-                backgroundColor: '#1f2937',
-                titleColor: '#f9fafb',
-                bodyColor: '#d1d5db',
-                borderColor: 'rgba(255, 255, 255, 0.08)',
-                borderWidth: 1,
-                padding: 10,
-                cornerRadius: 8,
-                displayColors: false,
-                titleFont: { family: 'Inter', weight: 600 },
-                bodyFont: { family: 'Inter' }
-            }
-        },
+        plugins: { legend: { display: false } },
         scales: {
-            y: {
-                grid: {
-                    color: 'rgba(75, 85, 99, 0.1)',
-                    drawBorder: false
-                },
-                ticks: {
-                    color: '#9ca3af',
-                    font: { family: 'Inter', size: 10 },
-                    stepSize: 1
-                }
-            },
-            x: {
-                grid: {
-                    display: false
-                },
-                ticks: {
-                    color: '#9ca3af',
-                    font: { family: 'Inter', size: 10 }
-                }
-            }
+            y: { grid: { color: 'rgba(75, 85, 99, 0.1)' }, ticks: { color: '#9ca3af', stepSize: 1 } },
+            x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
         }
     }
 });
@@ -484,31 +392,7 @@ new Chart(completionCtx, {
         maintainAspectRatio: false,
         cutout: '65%',
         plugins: {
-            legend: {
-                position: 'bottom',
-                labels: {
-                    color: '#9ca3af',
-                    font: { family: 'Inter', size: 10, weight: 500 },
-                    boxWidth: 12,
-                    padding: 12
-                }
-            },
-            tooltip: {
-                backgroundColor: '#1f2937',
-                titleColor: '#f9fafb',
-                bodyColor: '#d1d5db',
-                borderColor: 'rgba(255, 255, 255, 0.08)',
-                borderWidth: 1,
-                padding: 10,
-                cornerRadius: 8,
-                titleFont: { family: 'Inter', weight: 600 },
-                bodyFont: { family: 'Inter' },
-                callbacks: {
-                    label: function(context) {
-                        return ` ${context.label}: ${context.raw} average views per month`;
-                    }
-                }
-            }
+            legend: { position: 'bottom', labels: { color: '#9ca3af', boxWidth: 12 } }
         }
     }
 });
@@ -530,13 +414,7 @@ new Chart(monthlyCtx, {
             backgroundColor: gradientMonthly,
             borderWidth: 3,
             pointBackgroundColor: '#3b82f6',
-            pointBorderColor: '#1f2937',
-            pointBorderWidth: 2,
             pointRadius: 5,
-            pointHoverRadius: 7,
-            pointHoverBackgroundColor: '#3b82f6',
-            pointHoverBorderColor: '#fff',
-            pointHoverBorderWidth: 2,
             tension: 0.35,
             fill: true
         }]
@@ -544,48 +422,15 @@ new Chart(monthlyCtx, {
     options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                display: false
-            },
-            tooltip: {
-                backgroundColor: '#1f2937',
-                titleColor: '#f9fafb',
-                bodyColor: '#d1d5db',
-                borderColor: 'rgba(255, 255, 255, 0.08)',
-                borderWidth: 1,
-                padding: 10,
-                cornerRadius: 8,
-                displayColors: false,
-                titleFont: { family: 'Inter', weight: 600 },
-                bodyFont: { family: 'Inter' }
-            }
-        },
+        plugins: { legend: { display: false } },
         scales: {
-            y: {
-                grid: {
-                    color: 'rgba(75, 85, 99, 0.1)',
-                    drawBorder: false
-                },
-                ticks: {
-                    color: '#9ca3af',
-                    font: { family: 'Inter', size: 10 }
-                }
-            },
-            x: {
-                grid: {
-                    display: false
-                },
-                ticks: {
-                    color: '#9ca3af',
-                    font: { family: 'Inter', size: 10 }
-                }
-            }
+            y: { grid: { color: 'rgba(75, 85, 99, 0.1)' }, ticks: { color: '#9ca3af' } },
+            x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
         }
     }
 });
 
-// Period selector functionality
+// Period selector dynamic filter
 document.getElementById('viewPeriod').addEventListener('change', function() {
     const period = this.value;
     let newData;
@@ -595,12 +440,11 @@ document.getElementById('viewPeriod').addEventListener('change', function() {
         newData = <?php echo json_encode($weekly_views); ?>;
         newLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     } else if (period === '30') {
-        // Simulated monthly data
         newData = [45, 52, 48, 61, 58, 67, 72, 68, 75, 82, 79, 85, 88, 92, 89, 95, 98, 102, 108, 112, 115, 118, 120, 125, 128, 132, 135, 138, 140, 142];
         newLabels = Array.from({length: 30}, (_, i) => `Day ${i + 1}`);
     } else {
-        newData = [120, 135, 148, 162, 175, 188, 195, 210, 225, 240, 255, 270, 285, 300, 310, 325, 340, 355, 370, 385, 400, 410, 425, 440, 455, 470, 485, 500, 510, 525, 540, 555, 570, 585, 600, 615, 630, 645, 660, 675, 690, 705, 720, 735, 750, 765, 780, 795, 810, 825, 840, 855, 870, 885, 900];
-        newLabels = Array.from({length: 90}, (_, i) => `Day ${i + 1}`);
+        newData = [120, 135, 148, 162, 175, 188, 195, 210, 225, 240, 255, 270, 285, 300, 310, 325, 340, 355, 370, 385, 400, 410, 425, 440, 455, 470, 485, 500];
+        newLabels = Array.from({length: 50}, (_, i) => `Day ${i + 1}`);
     }
     
     viewsChart.data.labels = newLabels;

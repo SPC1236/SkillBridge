@@ -1,11 +1,13 @@
 <?php
 // apply.php
-// Job Seeker Application Portal - Light Blue Scheme
+// Job Seeker Application Portal - Corrected Paths & File Management
 
 $page_title = "Submit Application";
-require_once 'includes/config.php';
-require_once 'includes/database.php';
-require_once 'includes/auth_check.php';
+
+// 1. FIXED: Point to the root includes directory
+require_once '../includes/config.php';
+require_once '../includes/database.php';
+require_once '../includes/auth_check.php';
 
 ob_start();
 
@@ -13,16 +15,16 @@ $database = new Database();
 $conn = $database->getConnection();
 $user_id = $_SESSION['user_id'];
 
-// Safeguard: Ensure a target job target is requested
+// Safeguard: Ensure a target job is requested
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header('Location: browse_jobs.php');
+    header('Location: discover.php'); // Redirect to your main discover page
     exit;
 }
 
 $job_id = $_GET['id'];
 $job = null;
 
-// Pull details to verify job exists and show contextual target data
+// Pull details to verify job exists
 try {
     $job_sql = "SELECT id, title, company_name, location FROM jobs WHERE id = :id AND status = 'active'";
     $job_stmt = $conn->prepare($job_sql);
@@ -31,7 +33,7 @@ try {
     $job = $job_stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$job) {
-        header('Location: browse_jobs.php?error=not_found');
+        header('Location: discover.php?error=not_found');
         exit;
     }
 
@@ -46,26 +48,24 @@ try {
         exit;
     }
 } catch (PDOException $e) {
-    error_log("Pre-application checks failed: " . $e->getMessage());
-}
-
+            // Change your code to this for debugging:
+            die("Database Error: " . $e->getMessage()); 
+        }
 $message = '';
-$status_type = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $cover_letter = trim($_POST['cover_letter']);
     $resume_dest = null;
 
-    // Process file uploads safely
     if (isset($_FILES['resume']) && $_FILES['resume']['error'] === UPLOAD_ERR_OK) {
         $file_tmp = $_FILES['resume']['tmp_name'];
         $file_name = $_FILES['resume']['name'];
         $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
-
         $allowed_extensions = ['pdf', 'doc', 'docx'];
 
         if (in_array($file_ext, $allowed_extensions)) {
-            $upload_dir = 'uploads/resumes/';
+            // 2. FIXED: Point to root uploads directory so all uploads are centralized
+            $upload_dir = '../uploads/resumes/'; 
             if (!is_dir($upload_dir)) {
                 mkdir($upload_dir, 0755, true);
             }
@@ -73,40 +73,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $resume_dest = $upload_dir . $new_file_name;
 
             if (!move_uploaded_file($file_tmp, $resume_dest)) {
-                $message = "Failed to write file to workspace storage disk.";
-                $status_type = "error";
+                $message = "Failed to write file to system storage.";
             }
         } else {
-            $message = "Unsupported document extension. Please upload a PDF or Word document.";
-            $status_type = "error";
+            $message = "Unsupported document extension. Use PDF, DOC, or DOCX.";
         }
     } else {
-        $message = "A valid resume document is mandatory to finalize application pipelines.";
-        $status_type = "error";
+        $message = "Resume file upload is mandatory.";
     }
 
-    // Insert structural application records if valid
-    if (empty($message)) {
-        try {
-            $ins_sql = "INSERT INTO job_applications (job_id, user_id, cover_letter, resume_path) 
-                        VALUES (:job_id, :user_id, :cover_letter, :resume_path)";
-            $ins_stmt = $conn->prepare($ins_sql);
-            $ins_stmt->bindParam(':job_id', $job_id, PDO::PARAM_INT);
-            $ins_stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
-            $ins_stmt->bindParam(':cover_letter', $cover_letter);
-            $ins_stmt->bindParam(':resume_path', $resume_dest);
 
-            if ($ins_stmt->execute()) {
-                header('Location: saved_jobs.php?applied_success=1');
-                exit;
-            }
-        } catch (PDOException $e) {
-            error_log("Failed processing application payload insertion: " . $e->getMessage());
-            $message = "Internal data validation failure. Processing halted.";
-            $status_type = "error";
+if (empty($message)) {
+    try {
+        // Changed column names to match your schema exactly
+        $ins_sql = "INSERT INTO job_applications (job_id, user_id, cover_letter, status) 
+                    VALUES (:job_id, :user_id, :cover_letter, 'pending')";
+        
+        $ins_stmt = $conn->prepare($ins_sql);
+        $ins_stmt->bindParam(':job_id', $job_id, PDO::PARAM_INT);
+        $ins_stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+        $ins_stmt->bindParam(':cover_letter', $cover_letter);
+
+        if ($ins_stmt->execute()) {
+            header('Location: saved_jobs.php?applied_success=1');
+            exit;
         }
+    } catch (PDOException $e) {
+        die("Database Error Details: " . $e->getMessage());
     }
 }
+}
+
 ?>
 
 <style>
@@ -230,5 +227,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <?php
 $content = ob_get_clean();
-require_once 'includes/dashboard_layout.php';
+require_once '../includes/dashboard_layout.php';
 ?>
