@@ -1,0 +1,103 @@
+/* Jobseeker profile (employer-facing) enhancements */
+
+.profile-cover {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    padding: 1.25rem;
+    border-radius: 1rem;
+    background: linear-gradient(135deg, rgba(59,130,246,0.10), rgba(16,185,129,0.06));
+    border: 1px solid rgba(255,255,255,0.18);
+}
+
+.profile-avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #fff;
+    background: var(--gradient);
+    box-shadow: 0 12px 30px rgba(37,99,235,0.25);
+}
+
+.profile-cover-info {
+    flex: 1;
+}
+
+.profile-title {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+}
+
+.profile-professional {
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--accent-blue);
+    margin-bottom: 0.75rem;
+}
+
+.profile-contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    color: var(--dark-gray);
+}
+
+.profile-dot {
+    opacity: 0.6;
+}
+
+.profile-section {
+    margin: 2rem 0;
+}
+
+.profile-section-title {
+    color: var(--dark-blue);
+    margin-bottom: 1rem;
+}
+
+.profile-bio {
+    color: var(--dark-gray);
+    line-height: 1.7;
+    font-size: 1.05rem;
+}
+
+.profile-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.skills-more {
+    margin-left: 0;
+}
+
+.profile-subtle {
+    margin-top: 0.75rem;
+    color: var(--medium-gray);
+    font-size: 0.95rem;
+}
+
+.profile-footer {
+    padding-top: 1.5rem;
+    margin-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+@media (max-width: 768px) {
+    .profile-cover {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .profile-contact {
+        justify-content: center;
+    }
+}
+
